@@ -3,7 +3,7 @@ from fastapi import status, Request, HTTPException
 from functools import wraps
 from typing import List
 
-from config.config import API_NAME
+from config.config import DEFAULT_API_NAME
 
 
 def check_roles(api_roles: dict, app_roles: dict, permissions: List[str]) -> None:
@@ -12,7 +12,7 @@ def check_roles(api_roles: dict, app_roles: dict, permissions: List[str]) -> Non
         if "/" in perm:
             required_permissions.append(perm)
         else:
-            required_permissions.append(f"{API_NAME}/{perm}")
+            required_permissions.append(f"{DEFAULT_API_NAME}/{perm}")
 
     formatted_roles = []
     if api_roles:

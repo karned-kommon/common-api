@@ -4,11 +4,16 @@ setup(
     name="shared",
     version="0.1.0",
     packages=find_packages(),
-    install_requires=[],
+    install_requires=[
+        "httpx",
+        "fastapi",
+        "starlette",
+        "redis",
+    ],
     author="Karned",
     author_email="<EMAIL>",
     description="Shared FastApi middlewares and decorators",
-    long_description=open("README.md").read(),
+    long_description=open("README.md", encoding='utf-8').read(),
     long_description_content_type="text/markdown",
     url="https://github.com/karned-kommon/shared",
     classifiers=[

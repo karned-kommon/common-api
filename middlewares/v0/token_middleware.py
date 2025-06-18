@@ -7,7 +7,7 @@ from fastapi import HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
-from config.config import KEYCLOAK_HOST, KEYCLOAK_REALM, KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET
+from config.config import DEFAULT_KEYCLOAK_HOST, DEFAULT_KEYCLOAK_REALM, DEFAULT_KEYCLOAK_CLIENT_ID, DEFAULT_KEYCLOAK_CLIENT_SECRET
 from decorators.log_time import log_time_async
 from services.inmemory_service import get_redis_api_db
 from utils.path_util import is_unprotected_path
@@ -62,11 +62,11 @@ def write_cache_token( token: str, cache_token: dict ):
 
 def introspect_token( token: str ) -> dict:
     logging.info(f"Token : introspect_token")
-    url = f"{KEYCLOAK_HOST}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/token/introspect"
+    url = f"{DEFAULT_KEYCLOAK_HOST}/realms/{DEFAULT_KEYCLOAK_REALM}/protocol/openid-connect/token/introspect"
     data = {
         "token": token,
-        "client_id": KEYCLOAK_CLIENT_ID,
-        "client_secret": KEYCLOAK_CLIENT_SECRET
+        "client_id": DEFAULT_KEYCLOAK_CLIENT_ID,
+        "client_secret": DEFAULT_KEYCLOAK_CLIENT_SECRET
     }
 
     response = httpx.post(url, data=data)
@@ -160,4 +160,3 @@ class TokenVerificationMiddleware(BaseHTTPMiddleware):
             return response
         except HTTPException as exc:
             return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
-
