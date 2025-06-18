@@ -2,12 +2,12 @@ import logging
 from datetime import datetime, timezone
 
 import httpx
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 from config.config import DEFAULT_URL_API_GATEWAY
-from decorators.log_time import log_time_async
+from decorators.v0.log_time import log_time_async
 from middlewares.v0.token_middleware import read_cache_token, write_cache_token
 from services.inmemory_service import get_redis_api_db
 from utils.path_util import is_unprotected_path, is_unlicensed_path
@@ -42,13 +42,16 @@ def is_licence_found(request: Request, licence: str) -> bool:
     return True
 
 
-def get_licences(token: str, url_api_gateway=None) -> list:
+def get_licences(token: str) -> list:
     logging.info(f"License : get_licences")
 
-    # Use provided value or fall back to default
-    url_api_gateway = url_api_gateway or DEFAULT_URL_API_GATEWAY
+    if DEFAULT_URL_API_GATEWAY == "":
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="API config is not configured",
+        )
 
-    response = httpx.get(f"{url_api_gateway}/license/v1/mine", headers={"Authorization": f"Bearer {token}"})
+    response = httpx.get(f"{DEFAULT_URL_API_GATEWAY}/license/v1/mine", headers={"Authorization": f"Bearer {token}"})
     if response.status_code != 200:
         raise HTTPException(status_code=500, detail="Licences request failed")
     data = response.json()
@@ -74,8 +77,8 @@ def filter_licences(licences: list) -> list:
     return licences_filtered
 
 
-def prepare_licences(token: str, url_api_gateway=None) -> list:
-    licenses = get_licences(token, url_api_gateway=url_api_gateway)
+def prepare_licences(token: str) -> list:
+    licenses = get_licences(token)
     return filter_licences(licenses)
 
 
@@ -87,17 +90,17 @@ def refresh_cache_token(request: Request) -> dict:
     return cache_token
 
 
-def refresh_licences(request: Request, url_api_gateway=None) -> None:
+def refresh_licences(request: Request) -> dict:
     logging.info(f"License : refresh_licences")
     token = getattr(request.state, 'token', None)
-    licenses = prepare_licences(token, url_api_gateway=url_api_gateway)
+    licenses = prepare_licences(token)
     setattr(request.state, 'licenses', licenses)
     write_cache_token(token=token, cache_token=refresh_cache_token(request))
 
 
-def check_licence(request: Request, licence: str, url_api_gateway=None) -> None:
+def check_licence(request: Request, licence: str) -> None:
     if not is_licence_found(request, licence):
-        refresh_licences(request, url_api_gateway=url_api_gateway)
+        refresh_licences(request)
         if not is_licence_found(request, licence):
             raise HTTPException(status_code=403, detail="Licence not found")
 
@@ -112,9 +115,8 @@ def extract_entity(request: Request) -> str:
 
 
 class LicenceVerificationMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, url_api_gateway=None):
+    def __init__(self, app):
         super().__init__(app)
-        self.url_api_gateway = url_api_gateway
 
     @log_time_async
     async def dispatch(self, request: Request, call_next) -> Response:
@@ -124,7 +126,7 @@ class LicenceVerificationMiddleware(BaseHTTPMiddleware):
                 check_headers_licence(request)
                 licence_uuid = extract_licence(request)
                 logging.info(f"licence_uuid: {licence_uuid}")
-                check_licence(request, licence_uuid, url_api_gateway=self.url_api_gateway)
+                check_licence(request, licence_uuid)
                 setattr(request.state, 'licence_uuid', licence_uuid)
                 entity_uuid = extract_entity(request)
                 logging.info(f"entity_uuid: {entity_uuid}")

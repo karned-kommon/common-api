@@ -7,6 +7,12 @@ from config.config import DEFAULT_API_NAME
 
 
 def check_roles(api_roles: dict, app_roles: dict, permissions: List[str]) -> None:
+    if DEFAULT_API_NAME == "":
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="API config is not configured",
+        )
+
     required_permissions = []
     for perm in permissions:
         if "/" in perm:

@@ -3,7 +3,7 @@ import time
 from typing import Any
 
 import httpx
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
@@ -62,6 +62,16 @@ def write_cache_token( token: str, cache_token: dict ):
 
 def introspect_token( token: str ) -> dict:
     logging.info(f"Token : introspect_token")
+
+    if (DEFAULT_KEYCLOAK_HOST == "" or
+            DEFAULT_KEYCLOAK_REALM == "" or
+            DEFAULT_KEYCLOAK_CLIENT_ID == "" or
+            DEFAULT_KEYCLOAK_CLIENT_SECRET == ""):
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="API config is not configured",
+        )
+
     url = f"{DEFAULT_KEYCLOAK_HOST}/realms/{DEFAULT_KEYCLOAK_REALM}/protocol/openid-connect/token/introspect"
     data = {
         "token": token,
