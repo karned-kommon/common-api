@@ -1,4 +1,4 @@
-# Local instalation for use the package
+# Local Installation to Use the Package
 
 1. Clone the repository to your computer:
     ```bash
