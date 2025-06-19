@@ -1,4 +1,4 @@
-from services import Logger
+from shared.services.v0 import Logger
 from starlette.middleware.cors import CORSMiddleware as StarletteCorsMW
 
 logger = Logger()

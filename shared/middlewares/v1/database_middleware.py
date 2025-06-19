@@ -3,7 +3,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi import HTTPException, Request
 
 from repositories import get_repositories
-from services.logger_service import Logger
+from shared.services.v0 import Logger
 
 from starlette.responses import JSONResponse
 

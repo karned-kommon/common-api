@@ -8,7 +8,7 @@ from starlette.responses import JSONResponse, Response
 from shared.decorators.v0 import log_time_async
 from shared.middlewares.v1 import read_cache_token, write_cache_token
 from shared.services.v0 import get_redis_api_db
-from services import Logger
+from shared.services.v0 import Logger
 from shared.utils.v0 import is_unprotected_path, is_unlicensed_path
 from config.config import URL_API_GATEWAY
 

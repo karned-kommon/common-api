@@ -9,7 +9,7 @@ from starlette.responses import JSONResponse, Response
 from config.config import KEYCLOAK_HOST, KEYCLOAK_REALM, KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET
 from shared.decorators.v0 import log_time_async
 from shared.services.v0 import get_redis_api_db
-from services import Logger
+from shared.services.v0 import Logger
 from shared.utils.v0 import is_unprotected_path
 
 r = get_redis_api_db()
