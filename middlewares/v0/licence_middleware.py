@@ -9,8 +9,8 @@ from starlette.responses import JSONResponse, Response
 from config.config import DEFAULT_URL_API_GATEWAY
 from decorators.v0.log_time import log_time_async
 from middlewares.v0.token_middleware import read_cache_token, write_cache_token
-from services.inmemory_service import get_redis_api_db
-from utils.path_util import is_unprotected_path, is_unlicensed_path
+from services.v0.inmemory_service import get_redis_api_db
+from utils.v0.path_util import is_unprotected_path, is_unlicensed_path
 
 
 r = get_redis_api_db()
