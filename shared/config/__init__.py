@@ -4,8 +4,8 @@ KEYCLOAK_HOST = None
 KEYCLOAK_REALM = None
 KEYCLOAK_CLIENT_ID = None
 KEYCLOAK_CLIENT_SECRET = None
-UNPROTECTED_PATH = None
-UNLICENSED_PATH = None
+UNPROTECTED_PATH = []
+UNLICENSED_PATH = []
 REDIS_DB = None
 REDIS_HOST = None
 REDIS_PORT = None
@@ -18,8 +18,8 @@ def init_config(
         keycloak_realm: str,
         keycloak_client_id: str,
         keycloak_client_secret: str,
-        unprotected_path: str,
-        unlicensed_path: str,
+        unprotected_path: list,
+        unlicensed_path: list,
         redis_db: int,
         redis_host: str,
         redis_port: int,
