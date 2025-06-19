@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status
-from config.config import DEFAULT_UNPROTECTED_PATH, DEFAULT_UNLICENSED_PATH
+from shared.config import DEFAULT_UNPROTECTED_PATH, DEFAULT_UNLICENSED_PATH
 
 
 def is_unprotected_path( path: str ) -> bool:

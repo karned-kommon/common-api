@@ -1,7 +1,7 @@
 import redis
 
 from fastapi import HTTPException, status
-from config.config import DEFAULT_REDIS_DB, DEFAULT_REDIS_HOST, DEFAULT_REDIS_PASSWORD, DEFAULT_REDIS_PORT
+from shared.config import DEFAULT_REDIS_DB, DEFAULT_REDIS_HOST, DEFAULT_REDIS_PASSWORD, DEFAULT_REDIS_PORT
 
 
 def get_redis_api_db():

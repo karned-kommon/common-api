@@ -3,7 +3,7 @@ from fastapi import status, Request, HTTPException
 from functools import wraps
 from typing import List
 
-from config.config import DEFAULT_API_NAME
+from shared.config import DEFAULT_API_NAME
 
 
 def check_roles(api_roles: dict, app_roles: dict, permissions: List[str]) -> None:

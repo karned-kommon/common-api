@@ -7,10 +7,10 @@ from fastapi import HTTPException, status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
-from config.config import DEFAULT_KEYCLOAK_HOST, DEFAULT_KEYCLOAK_REALM, DEFAULT_KEYCLOAK_CLIENT_ID, DEFAULT_KEYCLOAK_CLIENT_SECRET
-from decorators.log_time import log_time_async
-from services.inmemory_service import get_redis_api_db
-from utils.v0.path_util import is_unprotected_path
+from shared.config import DEFAULT_KEYCLOAK_HOST, DEFAULT_KEYCLOAK_REALM, DEFAULT_KEYCLOAK_CLIENT_ID, DEFAULT_KEYCLOAK_CLIENT_SECRET
+from shared.decorators import log_time_async
+from shared.services import get_redis_api_db
+from shared.utils.v0.path_util import is_unprotected_path
 
 r = get_redis_api_db()
 

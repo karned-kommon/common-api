@@ -57,12 +57,12 @@ Import the middlewares and decorators in your FastAPI application:
 
 ```python
 from fastapi import FastAPI, Request
-from middlewares.v0.token_middleware import TokenVerificationMiddleware
-from middlewares.v0.licence_middleware import LicenceVerificationMiddleware
-from middlewares.v0.cors_middleware import CorsMiddleware
-from middlewares.v0.exception_handler import ExceptionHandlerMiddleware
-from decorators.v0.check_permission import check_permissions
-from decorators.v0.log_time import log_time, log_time_async
+from shared.middlewares.v0.token_middleware import TokenVerificationMiddleware
+from shared.middlewares.v0.licence_middleware import LicenceVerificationMiddleware
+from shared.middlewares.v0.cors_middleware import CorsMiddleware
+from shared.middlewares.v0.exception_handler import ExceptionHandlerMiddleware
+from shared.decorators import check_permissions
+from shared.decorators.v0.log_time import log_time, log_time_async
 
 app = FastAPI()
 
@@ -72,16 +72,19 @@ app.add_middleware(LicenceVerificationMiddleware)
 app.add_middleware(CorsMiddleware)
 app.add_middleware(ExceptionHandlerMiddleware)
 
+
 # Use decorators
 @app.get("/protected-route")
 @check_permissions(["read"])
 async def protected_route(request: Request):
     return {"message": "You have access to this route"}
 
+
 @log_time
 def my_function():
     # This function's execution time will be logged
     pass
+
 
 @log_time_async
 async def my_async_function():
@@ -107,9 +110,9 @@ This package has been designed to work without direct dependencies on a specific
 
 ```python
 from fastapi import FastAPI
-from middlewares.v0.token_middleware import TokenVerificationMiddleware
-from middlewares.v0.licence_middleware import LicenceVerificationMiddleware
-from decorators.v0.check_permission import check_permissions
+from shared.middlewares.v0.token_middleware import TokenVerificationMiddleware
+from shared.middlewares.v0.licence_middleware import LicenceVerificationMiddleware
+from shared.decorators import check_permissions
 
 app = FastAPI()
 
@@ -127,6 +130,7 @@ app.add_middleware(
     LicenceVerificationMiddleware,
     url_api_gateway="https://your-api-gateway"
 )
+
 
 # Configure check_permissions decorator with your API name
 @app.get("/protected-route")
