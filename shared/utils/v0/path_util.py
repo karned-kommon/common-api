@@ -1,21 +1,8 @@
-from fastapi import HTTPException, status
-from shared.config import DEFAULT_UNPROTECTED_PATH, DEFAULT_UNLICENSED_PATH
+from shared.config import UNPROTECTED_PATH, UNLICENSED_PATH
 
 
 def is_unprotected_path( path: str ) -> bool:
-    if DEFAULT_UNPROTECTED_PATH == "":
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="API config is not configured",
-        )
-
-    return path.lower() in DEFAULT_UNPROTECTED_PATH
+    return path.lower() in UNPROTECTED_PATH
 
 def is_unlicensed_path( path: str ) -> bool:
-    if DEFAULT_UNLICENSED_PATH == "":
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="API config is not configured",
-        )
-
-    return path.lower() in DEFAULT_UNLICENSED_PATH
+    return path.lower() in UNLICENSED_PATH

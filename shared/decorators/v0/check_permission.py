@@ -3,22 +3,16 @@ from fastapi import status, Request, HTTPException
 from functools import wraps
 from typing import List
 
-from shared.config import DEFAULT_API_NAME
+from shared.config import API_NAME
 
 
 def check_roles(api_roles: dict, app_roles: dict, permissions: List[str]) -> None:
-    if DEFAULT_API_NAME == "":
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="API config is not configured",
-        )
-
     required_permissions = []
     for perm in permissions:
         if "/" in perm:
             required_permissions.append(perm)
         else:
-            required_permissions.append(f"{DEFAULT_API_NAME}/{perm}")
+            required_permissions.append(f"{API_NAME}/{perm}")
 
     formatted_roles = []
     if api_roles:

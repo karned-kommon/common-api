@@ -6,7 +6,7 @@ from fastapi import HTTPException, status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
-from shared.config import DEFAULT_URL_API_GATEWAY
+from shared.config import URL_API_GATEWAY
 from shared.decorators.v0.log_time import log_time_async
 from shared.middlewares.v0.token_middleware import read_cache_token, write_cache_token
 from shared.services.v0.inmemory_service import get_redis_api_db
@@ -45,13 +45,7 @@ def is_licence_found(request: Request, licence: str) -> bool:
 def get_licences(token: str) -> list:
     logging.info(f"License : get_licences")
 
-    if DEFAULT_URL_API_GATEWAY == "":
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="API config is not configured",
-        )
-
-    response = httpx.get(f"{DEFAULT_URL_API_GATEWAY}/license/v1/mine", headers={"Authorization": f"Bearer {token}"})
+    response = httpx.get(f"{URL_API_GATEWAY}/license/v1/mine", headers={"Authorization": f"Bearer {token}"})
     if response.status_code != 200:
         raise HTTPException(status_code=500, detail="Licences request failed")
     data = response.json()

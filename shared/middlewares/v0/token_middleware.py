@@ -7,9 +7,9 @@ from fastapi import HTTPException, status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
-from shared.config import DEFAULT_KEYCLOAK_HOST, DEFAULT_KEYCLOAK_REALM, DEFAULT_KEYCLOAK_CLIENT_ID, DEFAULT_KEYCLOAK_CLIENT_SECRET
-from shared.decorators import log_time_async
-from shared.services import get_redis_api_db
+from shared.config import KEYCLOAK_HOST, KEYCLOAK_REALM, KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET
+from shared.decorators.v0.log_time import log_time_async
+from shared.services.v0.inmemory_service import get_redis_api_db
 from shared.utils.v0.path_util import is_unprotected_path
 
 r = get_redis_api_db()
@@ -63,20 +63,11 @@ def write_cache_token( token: str, cache_token: dict ):
 def introspect_token( token: str ) -> dict:
     logging.info(f"Token : introspect_token")
 
-    if (DEFAULT_KEYCLOAK_HOST == "" or
-            DEFAULT_KEYCLOAK_REALM == "" or
-            DEFAULT_KEYCLOAK_CLIENT_ID == "" or
-            DEFAULT_KEYCLOAK_CLIENT_SECRET == ""):
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="API config is not configured",
-        )
-
-    url = f"{DEFAULT_KEYCLOAK_HOST}/realms/{DEFAULT_KEYCLOAK_REALM}/protocol/openid-connect/token/introspect"
+    url = f"{KEYCLOAK_HOST}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/token/introspect"
     data = {
         "token": token,
-        "client_id": DEFAULT_KEYCLOAK_CLIENT_ID,
-        "client_secret": DEFAULT_KEYCLOAK_CLIENT_SECRET
+        "client_id": KEYCLOAK_CLIENT_ID,
+        "client_secret": KEYCLOAK_CLIENT_SECRET
     }
 
     response = httpx.post(url, data=data)
