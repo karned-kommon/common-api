@@ -23,33 +23,79 @@ pip install -r requirements.txt
 pip install -e .
 ```
 
+## Components
+
+This package includes the following components:
+
+### Middlewares
+
+- **TokenVerificationMiddleware**: Verifies JWT tokens from Keycloak
+- **LicenceVerificationMiddleware**: Verifies license keys for API access
+- **CorsMiddleware**: Handles Cross-Origin Resource Sharing (CORS)
+- **ExceptionHandler**: Provides standardized exception handling
+
+### Decorators
+
+- **check_permissions**: Checks if a user has the required permissions
+- **log_time**: Logs the execution time of functions and methods
+
+### Models
+
+- **ResponseModel**: Standardized response model for API responses
+
+### Services
+
+- **InMemoryService**: Provides Redis functionality for caching
+
+### Utilities
+
+- **PathUtil**: Utility functions for path handling and validation
+
 ## Usage
 
 Import the middlewares and decorators in your FastAPI application:
 
 ```python
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from middlewares.v0.token_middleware import TokenVerificationMiddleware
 from middlewares.v0.licence_middleware import LicenceVerificationMiddleware
+from middlewares.v0.cors_middleware import CorsMiddleware
+from middlewares.v0.exception_handler import ExceptionHandlerMiddleware
 from decorators.v0.check_permission import check_permissions
+from decorators.v0.log_time import log_time, log_time_async
 
 app = FastAPI()
+
+# Add middlewares
 app.add_middleware(TokenVerificationMiddleware)
 app.add_middleware(LicenceVerificationMiddleware)
+app.add_middleware(CorsMiddleware)
+app.add_middleware(ExceptionHandlerMiddleware)
 
+# Use decorators
 @app.get("/protected-route")
 @check_permissions(["read"])
 async def protected_route(request: Request):
     return {"message": "You have access to this route"}
+
+@log_time
+def my_function():
+    # This function's execution time will be logged
+    pass
+
+@log_time_async
+async def my_async_function():
+    # This async function's execution time will be logged
+    pass
 ```
 
 ## Note on Dependencies
 
 This package relies on several internal modules that should be provided by your FastAPI application:
 
-- `services.inmemory_service`: Provides Redis functionality
-- `decorators.log_time`: Provides timing decorators
-- `utils.path_util`: Provides path utility functions
+- `services.v0.inmemory_service`: Provides Redis functionality
+- `decorators.v0.log_time`: Provides timing decorators
+- `utils.v0.path_util`: Provides path utility functions
 
 Make sure these modules are available in your application's Python path.
 
