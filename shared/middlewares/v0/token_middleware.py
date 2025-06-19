@@ -3,14 +3,14 @@ import time
 from typing import Any
 
 import httpx
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
-from config.config import KEYCLOAK_HOST, KEYCLOAK_REALM, KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET
-from decorators.log_time import log_time_async
-from services.inmemory_service import get_redis_api_db
-from utils.path_util import is_unprotected_path
+from shared.config import KEYCLOAK_HOST, KEYCLOAK_REALM, KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET
+from shared.decorators.v0.log_time import log_time_async
+from shared.services.v0.inmemory_service import get_redis_api_db
+from shared.utils.v0.path_util import is_unprotected_path
 
 r = get_redis_api_db()
 
@@ -62,6 +62,7 @@ def write_cache_token( token: str, cache_token: dict ):
 
 def introspect_token( token: str ) -> dict:
     logging.info(f"Token : introspect_token")
+
     url = f"{KEYCLOAK_HOST}/realms/{KEYCLOAK_REALM}/protocol/openid-connect/token/introspect"
     data = {
         "token": token,
@@ -160,4 +161,3 @@ class TokenVerificationMiddleware(BaseHTTPMiddleware):
             return response
         except HTTPException as exc:
             return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
-

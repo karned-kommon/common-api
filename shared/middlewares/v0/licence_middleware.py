@@ -2,15 +2,15 @@ import logging
 from datetime import datetime, timezone
 
 import httpx
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
-from decorators.log_time import log_time_async
-from middlewares.token_middleware import read_cache_token, write_cache_token
-from services.inmemory_service import get_redis_api_db
-from utils.path_util import is_unprotected_path, is_unlicensed_path
-from config.config import URL_API_GATEWAY
+from shared.config import URL_API_GATEWAY
+from shared.decorators.v0.log_time import log_time_async
+from shared.middlewares.v0.token_middleware import read_cache_token, write_cache_token
+from shared.services.v0.inmemory_service import get_redis_api_db
+from shared.utils.v0.path_util import is_unprotected_path, is_unlicensed_path
 
 
 r = get_redis_api_db()
@@ -44,6 +44,7 @@ def is_licence_found(request: Request, licence: str) -> bool:
 
 def get_licences(token: str) -> list:
     logging.info(f"License : get_licences")
+
     response = httpx.get(f"{URL_API_GATEWAY}/license/v1/mine", headers={"Authorization": f"Bearer {token}"})
     if response.status_code != 200:
         raise HTTPException(status_code=500, detail="Licences request failed")
@@ -83,7 +84,7 @@ def refresh_cache_token(request: Request) -> dict:
     return cache_token
 
 
-def refresh_licences(request: Request) -> None:
+def refresh_licences(request: Request) -> dict:
     logging.info(f"License : refresh_licences")
     token = getattr(request.state, 'token', None)
     licenses = prepare_licences(token)
