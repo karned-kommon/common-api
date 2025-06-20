@@ -1,14 +1,14 @@
 from common_api.services.v0 import Logger
-from starlette.middleware.cors import CORSMiddleware as StarletteCorsMW
+from fastapi.middleware.cors import CORSMiddleware
 
 logger = Logger()
 
-class CORSMiddleware(StarletteCorsMW):
+class CustomCORSMiddleware(CORSMiddleware):
     def __init__(self, app):
         logger.init("Initializing CORSMiddleware")
         super().__init__(
             app=app,
-            allow_methods=["OPTIONS", "GET", "POST", "PUT", "DELETE"],
+            allow_methods=["*"],
             allow_headers=["*"],
             expose_headers=["Content-Type", "X-License-Key", "Authorization"],
             max_age=600
