@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name="common-api",
     version="0.1.0",
-    packages=find_packages(where=".", include=["common-api", "common-api.*"]),
+    packages=find_packages(where=".", include=["common_api", "common_api.*"]),
     install_requires=[
         "httpx",
         "fastapi",
