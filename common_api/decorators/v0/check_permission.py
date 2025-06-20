@@ -2,7 +2,7 @@ from fastapi import Request
 from functools import wraps
 from typing import List
 
-from shared.services.v0 import check_user_has_permissions
+from common_api.services.v0 import check_user_has_permissions
 
 def check_permissions(permissions: List[str]):
     def decorator(func):

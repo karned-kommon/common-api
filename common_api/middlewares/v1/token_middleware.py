@@ -7,10 +7,10 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 from config.config import KEYCLOAK_HOST, KEYCLOAK_REALM, KEYCLOAK_CLIENT_ID, KEYCLOAK_CLIENT_SECRET
-from shared.decorators.v0 import log_time_async
-from shared.services.v0 import get_redis_api_db
-from shared.services.v0 import Logger
-from shared.utils.v0 import is_unprotected_path
+from common_api.decorators.v0 import log_time_async
+from common_api.services.v0 import get_redis_api_db
+from common_api.services.v0 import Logger
+from common_api.utils.v0 import is_unprotected_path
 
 r = get_redis_api_db()
 logger = Logger()

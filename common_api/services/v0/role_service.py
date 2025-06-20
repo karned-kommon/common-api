@@ -1,5 +1,5 @@
 from typing import Dict, Optional
-from shared.services.v0.logger_service import Logger
+from common_api.services.v0.logger_service import Logger
 
 logger = Logger()
 

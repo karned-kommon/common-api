@@ -3,15 +3,15 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi import HTTPException, Request
 
 from repositories import get_repositories
-from shared.services.v0 import Logger
+from common_api.services.v0 import Logger
 
 from starlette.responses import JSONResponse
 
 from config.config import URL_API_GATEWAY
-from shared.decorators.v0.log_time import log_time_async
-from shared.middlewares.v0.token_middleware import extract_token
-from shared.services.v0.inmemory_service import get_redis_api_db
-from shared.utils.v0.path_util import is_unprotected_path
+from common_api.decorators.v0.log_time import log_time_async
+from common_api.middlewares.v0.token_middleware import extract_token
+from common_api.services.v0.inmemory_service import get_redis_api_db
+from common_api.utils.v0.path_util import is_unprotected_path
 
 r = get_redis_api_db()
 logger = Logger()

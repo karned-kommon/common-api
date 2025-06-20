@@ -3,7 +3,7 @@ from typing import List
 from fastapi import HTTPException, status
 
 from config.config import API_NAME
-from shared.services.v0.role_service import get_api_roles, get_app_roles
+from common_api.services.v0.role_service import get_api_roles, get_app_roles
 
 
 def format_required_permissions(permissions: List[str]) -> List[str]:

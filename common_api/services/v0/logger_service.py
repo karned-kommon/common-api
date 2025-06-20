@@ -1,6 +1,6 @@
 import logging
 import sys
-from config import LOG_LEVEL, API_NAME
+from common_api import LOG_LEVEL, API_NAME
 
 class Logger:
     EMOJIS = {
