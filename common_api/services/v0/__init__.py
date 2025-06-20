@@ -1,2 +1,3 @@
+from .inmemory_service import get_redis_api_db
 from .logger_service import Logger
 from .permission_service import check_user_has_permissions
