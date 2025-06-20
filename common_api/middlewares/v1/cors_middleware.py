@@ -8,8 +8,7 @@ class CORSMiddleware(StarletteCorsMW):
         logger.init("Initializing CORSMiddleware")
         super().__init__(
             app=app,
-            allow_origins=["*"],
-            allow_methods=["*"],
+            allow_methods=["OPTIONS", "GET", "POST", "PUT", "DELETE"],
             allow_headers=["*"],
             expose_headers=["Content-Type", "X-License-Key", "Authorization"],
             max_age=600
