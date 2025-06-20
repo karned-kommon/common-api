@@ -12,7 +12,7 @@ setup(
     ],
     author="Karned",
     author_email="<EMAIL>",
-    description="Shared FastApi middlewares and decorators",
+    description="Shared FastAPI middlewares and decorators",
     long_description=open("README.md", encoding='utf-8').read(),
     long_description_content_type="text/markdown",
     url="https://github.com/karned-kommon/shared",
