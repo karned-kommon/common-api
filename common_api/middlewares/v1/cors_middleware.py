@@ -5,9 +5,10 @@ logger = Logger()
 
 class CustomCORSMiddleware(CORSMiddleware):
     def __init__(self, app):
-        logger.init("Initializing CORSMiddleware")
+        logger.init("Initializing CustomCORSMiddleware")
         super().__init__(
             app=app,
+            allow_origins=["*"],
             allow_methods=["*"],
             allow_headers=["*"],
             expose_headers=["Content-Type", "X-License-Key", "Authorization"],
