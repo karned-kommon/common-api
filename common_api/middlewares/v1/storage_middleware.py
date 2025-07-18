@@ -1,125 +1,74 @@
-import os
-import boto3
-from uuid import uuid4
-from fastapi import UploadFile
-from tempfile import SpooledTemporaryFile
-from botocore.client import Config
-from interfaces.storage_bucket_interface import StorageBucketRepository
+import httpx
+from starlette.middleware.base import BaseHTTPMiddleware
+from fastapi import HTTPException, Request
 
-def generate_unique_filename(original_filename, custom_uuid=None):
-    file_ext = os.path.splitext(original_filename)[1]
-    if custom_uuid:
-        return f"{custom_uuid}{file_ext}"
-    return f"{uuid4()}{file_ext}"
+from repositories import get_bucket_repositories
+from common_api.services.v0 import Logger
 
+from starlette.responses import JSONResponse
 
-def get_client(credentials):
-    endpoint = credentials.get('endpoint')
-    access_key = credentials.get('access_key')
-    secret_key = credentials.get('secret_key')
-    region = credentials.get('region', 'us-east-1')
-    use_ssl = credentials.get('use_ssl', False)
+from config.config import URL_API_GATEWAY
+from common_api.decorators.v0.log_time import log_time_async
+from common_api.middlewares.v0.token_middleware import extract_token
+from common_api.services.v0.inmemory_service import get_redis_api_db
+from common_api.utils.v0.path_util import is_unprotected_path
 
-    s3_client = boto3.client(
-        's3',
-        endpoint_url=endpoint,
-        aws_access_key_id=access_key,
-        aws_secret_access_key=secret_key,
-        region_name=region,
-        config=Config(signature_version='s3v4'),
-        use_ssl=use_ssl
-    )
-    return s3_client
-
-def check_credentials(credentials):
-    required_fields = ['endpoint', 'access_key', 'secret_key']
-    if not credentials or not all(credentials.get(field) for field in required_fields):
-        raise ValueError("Invalid S3 credentials: Missing required fields.")
+r = get_redis_api_db()
+logger = Logger()
 
 
+def read_cache_credential(licence: str) -> dict | None:
+    cache_key = f"{licence}_storage"
+    cached_result = r.get(cache_key)
+    if cached_result is not None:
+        logger.info(f"Using cached storage credential for licence {licence}")
+        return eval(cached_result)
+    return None
 
-class StorageRepositoryS3(StorageBucketRepository):
-    def __init__(self, credentials):
-        check_credentials(credentials)
-        self.credentials = credentials
-        self.bucket_name = credentials.get('bucket_name', 'storage')
-        self.client = get_client(credentials)
 
-    def ensure_bucket_exists(self):
+def write_cache_credential(licence: str, credential: dict):
+    cache_key = f"{licence}_storage"
+    r.set(cache_key, str(credential), ex=1800)
+    logger.info(f"Cached storage credential for licence {licence}")
+
+
+def get_credential(token: str, licence: str) -> dict:
+    cached_credential = read_cache_credential(licence)
+    if cached_credential:
+        return cached_credential
+
+    response = httpx.get(url=f"{URL_API_GATEWAY}/credential/v1/storage",
+                         headers={"Authorization": f"Bearer {token}", "X-License-Key": f"{licence}"})
+    if response.status_code != 200:
+        raise HTTPException(status_code=500, detail="Credential request failed")
+
+    credential = response.json()
+    write_cache_credential(licence, credential)
+
+    return credential
+
+def check_stores( stores ):
+    if stores is None:
+        raise Exception("StorageConnectionMiddleware: Error: No repository found")
+
+
+class StorageConnectionMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app):
+        logger.init("Initializing StorageConnectionMiddleware")
+        super().__init__(app)
+
+    @log_time_async
+    async def dispatch( self, request: Request, call_next ):
         try:
-            self.client.head_bucket(Bucket=self.bucket_name)
-        except:
-            self.client.create_bucket(Bucket=self.bucket_name)
-        return self.bucket_name
+            if not is_unprotected_path(request.url.path):
+                token = extract_token(request)
+                credentials = get_credential(token=token, licence=request.state.licence_uuid)
 
-    def download_file_from_bucket(self, file_path: str):
-        if not file_path:
-            return None
+                stores = get_bucket_repositories(credentials=credentials)
+                check_stores(stores)
+                request.state.stores = stores
 
-        bucket_name = self.ensure_bucket_exists()
-        file_key = file_path.replace(f"s3://{bucket_name}/", "")
-
-        try:
-            file_content = SpooledTemporaryFile()
-            self.client.download_fileobj(bucket_name, file_key, file_content)
-            file_content.seek(0)
-            return file_content
-        except Exception as e:
-            raise ValueError(f"Failed to download file from bucket: {str(e)}")
-
-    def delete_file_from_bucket(self, file_path: str):
-        if not file_path:
-            return
-
-        bucket_name = self.ensure_bucket_exists()
-        file_key = file_path.replace(f"s3://{bucket_name}/", "")
-
-        try:
-            self.client.delete_object(Bucket=bucket_name, Key=file_key)
-        except Exception as e:
-            raise ValueError(f"Failed to delete file from bucket: {str(e)}")
-
-    def list_files_in_bucket(self):
-        bucket_name = self.ensure_bucket_exists()
-
-        try:
-            response = self.client.list_objects_v2(Bucket=bucket_name)
-            if 'Contents' not in response:
-                return {}
-
-            files = {item['Key']: item['LastModified'] for item in response['Contents']}
-            return files
-        except Exception as e:
-            raise ValueError(f"Failed to list files in bucket: {str(e)}")
-
-    def upload_file_to_bucket(self, file: UploadFile, custom_uuid=None):
-        if not file or not file.filename:
-            return None, None
-
-        bucket_name = self.ensure_bucket_exists()
-        unique_filename = generate_unique_filename(file.filename, custom_uuid)
-        file_content = file.file.read()
-        file.file.seek(0)
-
-        self.client.upload_fileobj(
-            file.file,
-            bucket_name,
-            unique_filename,
-            ExtraArgs={'ContentType': file.content_type}
-        )
-
-        file_path = f"s3://{bucket_name}/{unique_filename}"
-
-        try:
-            file.file.seek(0)
-        except ValueError:
-            new_file = SpooledTemporaryFile()
-            new_file.write(file_content)
-            new_file.seek(0)
-            file.file = new_file
-
-        return file_path, file_content
-
-    def close(self):
-        # No need to explicitly close the boto3 client
-        pass
+            response = await call_next(request)
+            return response
+        except HTTPException as exc:
+            return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
